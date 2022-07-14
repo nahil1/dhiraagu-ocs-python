@@ -102,20 +102,25 @@ def service_details(session, instance, service_number):
         details['data'+str(i)]['expiry'] = d.find(class_="data-expire").text[11:]
         details['data'+str(i)]['unit'], details['data'+str(i)]['used'], details['data'+str(i)]['total']= parse_data(d.find(class_="data-total").text)
         
-    
-    
     return response, details
 
 def parse_data(text):
-    if "MB" in text:
-        unit = "MB"
-    elif "GB" in text:
-        unit = "GB"
-    elif "TB" in text:
-        unit = "TB"
-    
-    used = re.findall(r'(\d+\.?\d*) [MGT]B', text)[0]
-    total = re.findall(r'(\d+\.?\d*) [MGT]B', text)[-1]
+    if re.search(r'[MGT]B', text):
+        unit = re.findall(r'[MGT]B', text)[0]
+        used = re.findall(r'(\d+\.?\d*) [MGT]B', text)[0]
+        total = re.findall(r'(\d+\.?\d*) [MGT]B', text)[-1]
+    elif "min" in text:
+        unit = "min"
+        used = re.findall(r'(\d+) min', text)[0]
+        total = re.findall(r'(\d+) min', text)[-1]
+    elif "SMS" in text:
+        unit = "SMS"
+        if "left" in text:
+            used = "0"
+            total = total = re.findall(r'(\d+) SMS', text)[0]
+        elif "used" in text:
+            used = re.findall(r'(\d+) SMS', text)[0]
+            total = re.findall(r'(\d+) SMS', text)[-1]
     
     return unit, used, total
 
